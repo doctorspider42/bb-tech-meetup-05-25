@@ -1,0 +1,232 @@
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ProjectOllama.AIServices;
+
+/// <summary>
+///     Service for interacting with Groq API.
+/// </summary>
+public class GroqService : IAiService
+{
+    private readonly string _apiKey;
+    private readonly HttpClient _httpClient;
+
+    // Hardcoded URL and default model as requested
+    private const string ApiUrl = "https://api.groq.com/openai/v1/chat/completions";
+    private const string DefaultModel = "llama-3.1-8b-instant";
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="GroqService" /> class.
+    /// </summary>
+    /// <param name="apiKey">The API key for authentication.</param>
+    public GroqService(string apiKey)
+    {
+        _httpClient = new HttpClient();
+        _apiKey = apiKey ?? throw new ArgumentNullException(
+            nameof(apiKey),
+            "Groq API key cannot be null");
+
+        Console.WriteLine($"GroqService initialized");
+        Console.WriteLine($"API key provided: {!string.IsNullOrEmpty(_apiKey)}");
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="GroqService" /> class.
+    /// </summary>
+    /// <param name="httpClient">The HttpClient to use.</param>
+    /// <param name="apiKey">The API key for authentication.</param>
+    public GroqService(HttpClient httpClient, string apiKey)
+    {
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _apiKey = apiKey ?? throw new ArgumentNullException(
+            nameof(apiKey),
+            "Groq API key cannot be null");
+
+        Console.WriteLine($"GroqService initialized");
+        Console.WriteLine($"API key provided: {!string.IsNullOrEmpty(_apiKey)}");
+    }
+
+    /// <summary>
+    ///     Gets the name of the AI service provider.
+    /// </summary>
+    public string ProviderName => "Groq";
+
+    /// <summary>
+    ///     Generates a completion using the specified model.
+    /// </summary>
+    /// <param name="prompt">The prompt to generate from.</param>
+    /// <param name="modelName">The name of the model to use (optional, defaults to llama-3.3-70b-versatile).</param>
+    /// <param name="temperature">The temperature to use for generation (0.0-1.0).</param>
+    /// <returns>An AI completion result containing the generated text.</returns>
+    public async Task<AiCompletionResult> GenerateCompletionAsync(
+        string prompt,
+        string? modelName = null,
+        float temperature = 0.7f)
+    {
+        // Use the default model if none is specified
+        modelName ??= DefaultModel;
+
+        var request = new GroqChatCompletionRequest
+        {
+            Model = modelName,
+            Messages = new[]
+            {
+                new ChatMessage
+                {
+                    Role = "user",
+                    Content = prompt
+                }
+            },
+            Temperature = temperature,
+            MaxTokens = 800
+        };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json");
+
+        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, ApiUrl)
+        {
+            Content = content
+        };
+
+        httpRequestMessage.Headers.Add("Authorization", $"Bearer {_apiKey}");
+
+        var response = await _httpClient.SendAsync(httpRequestMessage);
+        response.EnsureSuccessStatusCode();
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var groqResponse =
+            JsonSerializer.Deserialize<GroqChatCompletionResponse>(responseContent) ??
+            throw new InvalidOperationException(
+                "Failed to deserialize the Groq API response.");
+
+        // Extract the text from the first choice (if available)
+        var responseText = groqResponse.Choices.Length > 0
+            ? groqResponse.Choices[0].Message.Content
+            : string.Empty;
+
+        return new AiCompletionResult
+        {
+            Text = responseText
+        };
+    }
+
+    /// <summary>
+    ///     Checks if the Groq service is available and ready to accept requests.
+    /// </summary>
+    /// <returns>True if the service is available, otherwise false.</returns>
+    public async Task<bool> IsAvailableAsync()
+    {
+        try
+        {
+            // We'll send a simple request with a minimal prompt to check if the service is available
+            var request = new GroqChatCompletionRequest
+            {
+                Model = DefaultModel,
+                Messages = new[]
+                {
+                    new ChatMessage
+                    {
+                        Role = "user",
+                        Content = "Hi"
+                    }
+                },
+                Temperature = 0.7f,
+                MaxTokens = 5 // Minimal tokens for a quick check
+            };
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(request),
+                Encoding.UTF8,
+                "application/json");
+
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, ApiUrl)
+            {
+                Content = content
+            };
+
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {_apiKey}");
+
+            var response = await _httpClient.SendAsync(httpRequestMessage);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    #region API Models
+
+    /// <summary>
+    ///     Groq chat completion request model.
+    /// </summary>
+    private class GroqChatCompletionRequest
+    {
+        [JsonPropertyName("model")] public string Model { get; set; } = DefaultModel;
+
+        [JsonPropertyName("messages")] public ChatMessage[] Messages { get; set; } = Array.Empty<ChatMessage>();
+
+        [JsonPropertyName("temperature")] public float Temperature { get; set; }
+
+        [JsonPropertyName("max_tokens")] public int MaxTokens { get; set; } = 800;
+    }
+
+    /// <summary>
+    ///     Chat message for Groq chat completions API.
+    /// </summary>
+    private class ChatMessage
+    {
+        [JsonPropertyName("role")] public string Role { get; set; } = string.Empty;
+
+        [JsonPropertyName("content")] public string Content { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    ///     Groq chat completion response model.
+    /// </summary>
+    private class GroqChatCompletionResponse
+    {
+        [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("object")] public string Object { get; set; } = string.Empty;
+
+        [JsonPropertyName("created")] public long Created { get; set; }
+
+        [JsonPropertyName("model")] public string Model { get; set; } = string.Empty;
+
+        [JsonPropertyName("choices")] public ChatChoice[] Choices { get; set; } = Array.Empty<ChatChoice>();
+
+        [JsonPropertyName("usage")] public Usage Usage { get; set; } = new();
+    }
+
+    /// <summary>
+    ///     Represents a chat completion choice returned by Groq.
+    /// </summary>
+    private class ChatChoice
+    {
+        [JsonPropertyName("message")] public ChatMessage Message { get; set; } = new();
+
+        [JsonPropertyName("index")] public int Index { get; set; }
+
+        [JsonPropertyName("finish_reason")] public string FinishReason { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    ///     Represents the token usage information.
+    /// </summary>
+    private class Usage
+    {
+        [JsonPropertyName("prompt_tokens")] public int PromptTokens { get; set; }
+
+        [JsonPropertyName("completion_tokens")]
+        public int CompletionTokens { get; set; }
+
+        [JsonPropertyName("total_tokens")] public int TotalTokens { get; set; }
+    }
+
+    #endregion
+}
