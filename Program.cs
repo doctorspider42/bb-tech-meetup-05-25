@@ -26,15 +26,17 @@ switch (aiProvider)
         // Try to get the API key from user secrets first, then fall back to configuration
         var azureOpenAiKey = builder.Configuration["AzureOpenAi:ApiKey:Secret"] ?? 
                              builder.Configuration["AzureOpenAi:ApiKey"];
+        var azureOpenAiModel = builder.Configuration["AzureOpenAi:ModelName"];
 
         if (!string.IsNullOrEmpty(azureOpenAiEndpoint) && !string.IsNullOrEmpty(azureOpenAiKey))
         {
             builder.Services.AddSingleton<IAiService>(provider => new AzureOpenAiService(
                 provider.GetRequiredService<HttpClient>(),
                 azureOpenAiEndpoint,
-                azureOpenAiKey));
+                azureOpenAiKey,
+                azureOpenAiModel));
 
-            Console.WriteLine("Using Azure OpenAI service");
+            Console.WriteLine($"Using Azure OpenAI service with model: {azureOpenAiModel ?? "default"}");
         }
         else
         {
@@ -45,21 +47,26 @@ switch (aiProvider)
 
     case AiProviders.DockerModel:
         // Register Docker Model service
-        builder.Services.AddSingleton<IAiService, DockerModelService>();
-        Console.WriteLine("Using Docker Model service");
+        var dockerModelName = builder.Configuration["DockerModel:ModelName"];
+        builder.Services.AddSingleton<IAiService>(provider => new DockerModelService(
+            provider.GetRequiredService<HttpClient>(),
+            dockerModelName));
+        Console.WriteLine($"Using Docker Model service with model: {dockerModelName ?? "default"}");
         break;
 
     case AiProviders.Groq:
         var groqApiKey = builder.Configuration["Groq:ApiKey:Secret"] ?? 
                          builder.Configuration["Groq:ApiKey"];
+        var groqModelName = builder.Configuration["Groq:ModelName"];
 
         if (!string.IsNullOrEmpty(groqApiKey))
         {
             builder.Services.AddSingleton<IAiService>(provider => new GroqService(
                 provider.GetRequiredService<HttpClient>(),
-                groqApiKey));
+                groqApiKey,
+                groqModelName));
 
-            Console.WriteLine("Using Groq service");
+            Console.WriteLine($"Using Groq service with model: {groqModelName ?? "default"}");
         }
         else
         {
@@ -71,8 +78,11 @@ switch (aiProvider)
     case AiProviders.Ollama:
     default:
         // Register Ollama service by default
-        builder.Services.AddSingleton<IAiService, OllamaService>();
-        Console.WriteLine("Using Ollama service");
+        var ollamaModelName = builder.Configuration["Ollama:ModelName"];
+        builder.Services.AddSingleton<IAiService>(provider => new OllamaService(
+            provider.GetRequiredService<HttpClient>(),
+            ollamaModelName));
+        Console.WriteLine($"Using Ollama service with model: {ollamaModelName ?? "default"}");
         break;
 }
 

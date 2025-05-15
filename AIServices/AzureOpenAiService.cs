@@ -10,17 +10,17 @@ namespace ProjectOllama.AIServices;
 public class AzureOpenAiService : IAiService
 {
     private readonly string _apiKey;
+    private readonly string _modelName;
     private readonly string _endpoint;
     private readonly HttpClient _httpClient;
-
-    private const string DefaultModel = "gpt-4.1-nano";
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="AzureOpenAiService" /> class.
     /// </summary>
     /// <param name="endpoint">The Azure OpenAI endpoint URL.</param>
     /// <param name="apiKey">The API key for authentication.</param>
-    public AzureOpenAiService(string endpoint, string apiKey)
+    /// <param name="modelName">The model name to use for completions.</param>
+    public AzureOpenAiService(string endpoint, string apiKey, string? modelName = null)
     {
         _httpClient = new HttpClient();
         _apiKey = apiKey ?? throw new ArgumentNullException(
@@ -29,9 +29,13 @@ public class AzureOpenAiService : IAiService
         _endpoint = endpoint?.TrimEnd('/') ?? throw new ArgumentNullException(
             nameof(endpoint),
             "Azure OpenAI endpoint cannot be null");
+        _modelName = modelName ?? throw new ArgumentNullException(
+            nameof(modelName),
+            "Model name must be provided in configuration");
 
         Console.WriteLine($"AzureOpenAiService initialized with endpoint: {_endpoint}");
         Console.WriteLine($"API key provided: {!string.IsNullOrEmpty(_apiKey)}");
+        Console.WriteLine($"Using model: {_modelName}");
     }
 
     /// <summary>
@@ -40,7 +44,12 @@ public class AzureOpenAiService : IAiService
     /// <param name="httpClient">The HttpClient to use.</param>
     /// <param name="endpoint">The Azure OpenAI endpoint URL.</param>
     /// <param name="apiKey">The API key for authentication.</param>
-    public AzureOpenAiService(HttpClient httpClient, string endpoint, string apiKey)
+    /// <param name="modelName">The model name to use for completions.</param>
+    public AzureOpenAiService(
+        HttpClient httpClient,
+        string endpoint,
+        string apiKey,
+        string? modelName = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _apiKey = apiKey ?? throw new ArgumentNullException(
@@ -49,9 +58,13 @@ public class AzureOpenAiService : IAiService
         _endpoint = endpoint?.TrimEnd('/') ?? throw new ArgumentNullException(
             nameof(endpoint),
             "Azure OpenAI endpoint cannot be null");
+        _modelName = modelName ?? throw new ArgumentNullException(
+            nameof(modelName),
+            "Model name must be provided in configuration");
 
         Console.WriteLine($"AzureOpenAiService initialized with endpoint: {_endpoint}");
         Console.WriteLine($"API key provided: {!string.IsNullOrEmpty(_apiKey)}");
+        Console.WriteLine($"Using model: {_modelName}");
     }
 
     /// <summary>
@@ -71,7 +84,7 @@ public class AzureOpenAiService : IAiService
         string? modelName,
         float temperature = 0.7f)
     {
-        modelName ??= DefaultModel;
+        modelName = modelName ?? _modelName;
 
         var apiUrl =
             $"{_endpoint}/openai/deployments/{modelName}/chat/completions?api-version=2023-05-15";
@@ -165,7 +178,8 @@ public class AzureOpenAiService : IAiService
     /// </summary>
     private class AzureOpenAiChatCompletionRequest
     {
-        [JsonPropertyName("messages")] public ChatMessage[] Messages { get; set; } = Array.Empty<ChatMessage>();
+        [JsonPropertyName("messages")]
+        public ChatMessage[] Messages { get; set; } = Array.Empty<ChatMessage>();
 
         [JsonPropertyName("temperature")] public float Temperature { get; set; }
 
@@ -213,7 +227,8 @@ public class AzureOpenAiService : IAiService
 
         [JsonPropertyName("model")] public string Model { get; set; } = string.Empty;
 
-        [JsonPropertyName("choices")] public ChatChoice[] Choices { get; set; } = Array.Empty<ChatChoice>();
+        [JsonPropertyName("choices")]
+        public ChatChoice[] Choices { get; set; } = Array.Empty<ChatChoice>();
 
         [JsonPropertyName("usage")] public Usage Usage { get; set; } = new();
     }

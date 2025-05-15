@@ -6,10 +6,11 @@
     }
   },
   "AllowedHosts": "*",
-  //"AiProvider": "Ollama",
-  "AiProvider": "AzureOpenAi",
+   "AiProvider": "Ollama",
+  //  "AiProvider": "AzureOpenAi",
+  // "AiProvider": "DockerModel",
+   //"AiProvider": "Groq",
   //"AiProvider": "DockerModel",
-  //"AiProvider": "Groq",
   "AzureOpenAi": {
     "Endpoint": "https://your-azure-openai-endpoint.openai.azure.com",
     "ApiKey": "",

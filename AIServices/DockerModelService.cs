@@ -9,20 +9,25 @@ namespace ProjectOllama.AIServices;
 /// </summary>
 public class DockerModelService : IAiService
 {
-    private const string DefaultModel = "ai/llama3.2:1B-Q4_0";
     private readonly HttpClient _httpClient;
     private readonly string _dockerModelBaseUrl = "http://localhost:12434";
+    private readonly string _configuredModel;
 
     public DockerModelService()
     {
         _httpClient = new HttpClient();
         _httpClient.BaseAddress = new Uri(_dockerModelBaseUrl);
+        throw new ArgumentException("Model name must be provided in configuration");
     }
 
-    public DockerModelService(HttpClient httpClient)
+    public DockerModelService(HttpClient httpClient, string? modelName = null)
     {
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri(_dockerModelBaseUrl);
+        _configuredModel = modelName ?? throw new ArgumentNullException(
+            nameof(modelName),
+            "Model name must be provided in configuration");
+        Console.WriteLine($"DockerModelService initialized with model: {_configuredModel}");
     }
 
     /// <summary>
@@ -44,7 +49,7 @@ public class DockerModelService : IAiService
     {
         var request = new DockerModelChatCompletionRequest
         {
-            Model = modelName ?? DefaultModel,
+            Model = modelName ?? _configuredModel,
             Messages = new[]
             {
                 new Message

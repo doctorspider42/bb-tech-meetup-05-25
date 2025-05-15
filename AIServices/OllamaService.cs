@@ -6,20 +6,24 @@ namespace ProjectOllama.AIServices;
 
 public class OllamaService : IAiService
 {
-    private const string DefaultModel = "llama3.2:3b-instruct-q4_K_M";
     private readonly HttpClient _httpClient;
     private readonly string _ollamaBaseUrl = "http://localhost:11434";
+    private readonly string _configuredModel;
 
     public OllamaService()
     {
         _httpClient = new HttpClient();
         _httpClient.BaseAddress = new Uri(_ollamaBaseUrl);
+        throw new ArgumentException("Model name must be provided in configuration");
     }
 
-    public OllamaService(HttpClient httpClient)
+    public OllamaService(HttpClient httpClient, string? modelName = null)
     {
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri(_ollamaBaseUrl);
+        _configuredModel = modelName ?? throw new ArgumentNullException(
+            nameof(modelName),
+            "Model name must be provided in configuration");
     }
 
     /// <summary>
@@ -41,7 +45,7 @@ public class OllamaService : IAiService
     {
         var request = new OllamaCompletionRequest
         {
-            Model = modelName ?? DefaultModel,
+            Model = modelName ?? _configuredModel,
             Prompt = prompt,
             Temperature = temperature,
             Stream = false
