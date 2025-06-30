@@ -17,6 +17,8 @@ const TabContainer = styled.div`
 
 const Tab = styled.button.attrs({
   type: 'button' // Explicitly set button type to prevent form submission
+}).withConfig({
+  shouldForwardProp: (prop) => !['active'].includes(prop)
 })`
   padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
   background-color: ${props => props.active ? 'var(--color-primary)' : 'var(--color-surface)'};

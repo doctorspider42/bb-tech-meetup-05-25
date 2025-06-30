@@ -57,7 +57,9 @@ const ButtonContainer = styled.div`
   gap: var(--spacing-md, 1rem);
 `;
 
-const Button = styled.button`
+const Button = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['primary'].includes(prop)
+})`
   background-color: ${props => props.primary ? 'var(--color-primary)' : 'transparent'};
   color: ${props => props.primary ? 'white' : 'var(--color-primary)'};
   border: ${props => props.primary ? 'none' : '1px solid var(--color-primary)'};
