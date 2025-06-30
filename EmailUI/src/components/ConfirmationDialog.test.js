@@ -20,6 +20,12 @@ test('confirm button triggers callbacks', () => {
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 
+test('renders provided title and message', () => {
+  const { getByText } = renderDialog();
+  expect(getByText('Confirm')).toBeInTheDocument();
+  expect(getByText('Are you sure?')).toBeInTheDocument();
+});
+
 test('cancel button only closes dialog', () => {
   const onConfirm = jest.fn();
   const onClose = jest.fn();

@@ -1,20 +1,20 @@
-import { render, fireEvent } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import ThemeToggle from './ThemeToggle';
-import { ThemeProvider } from '../contexts/ThemeContext';
+import { renderWithProviders } from '../../testUtils';
+import axios from 'axios';
+
+jest.mock('axios', () => ({
+  create: () => ({ post: jest.fn() })
+}));
 
 // Helper to render component with context
-const setup = () => {
-  return render(
-    <ThemeProvider>
-      <ThemeToggle />
-    </ThemeProvider>
-  );
-};
+const setup = () => renderWithProviders(<ThemeToggle />);
 
 test('toggles theme when clicked', () => {
   const { getByRole } = setup();
   const button = getByRole('button');
-  expect(button).toHaveTextContent('🌙'); // initial light theme shows moon
+  expect(button).toHaveTextContent('🌙');
   fireEvent.click(button);
-  expect(button).toHaveTextContent('☀️'); // after toggle shows sun
+  expect(button).toHaveTextContent('☀️');
+  expect(localStorage.getItem('theme')).toBe('dark');
 });

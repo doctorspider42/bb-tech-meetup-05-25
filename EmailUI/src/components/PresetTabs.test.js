@@ -1,7 +1,7 @@
-import { render, fireEvent } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import PresetTabs from './PresetTabs';
-import { EmailProvider, useEmail } from '../contexts/EmailContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
+import { useEmail } from '../contexts/EmailContext';
+import { renderWithProviders } from '../../testUtils';
 import axios from 'axios';
 
 jest.mock('axios', () => ({
@@ -18,14 +18,7 @@ const Wrapper = () => {
   );
 };
 
-const setup = () =>
-  render(
-    <ThemeProvider>
-      <EmailProvider>
-        <Wrapper />
-      </EmailProvider>
-    </ThemeProvider>
-  );
+const setup = () => renderWithProviders(<Wrapper />);
 
 test('shows preset description on click', () => {
   const { getByText } = setup();

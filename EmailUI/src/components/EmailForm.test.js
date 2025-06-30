@@ -1,21 +1,17 @@
-import { render, fireEvent } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import axios from 'axios';
 import EmailForm from './EmailForm';
-import { EmailProvider } from '../contexts/EmailContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
+import { renderWithProviders } from '../../testUtils';
 
-jest.mock('axios', () => ({
-  create: () => ({ post: jest.fn() })
-}));
+var mockPost;
+jest.mock('axios', () => {
+  mockPost = jest.fn();
+  return {
+    create: () => ({ post: mockPost })
+  };
+});
 
-const setup = () =>
-  render(
-    <ThemeProvider>
-      <EmailProvider>
-        <EmailForm />
-      </EmailProvider>
-    </ThemeProvider>
-  );
+const setup = () => renderWithProviders(<EmailForm />);
 
 test('submit button disabled without input', () => {
   const { getByRole, getByLabelText } = setup();
@@ -25,4 +21,12 @@ test('submit button disabled without input', () => {
     target: { value: 'Hello' },
   });
   expect(button).not.toBeDisabled();
+});
+
+test('shows error when API call fails', async () => {
+  mockPost.mockRejectedValueOnce({ message: 'Network error' });
+  const { getByRole, getByLabelText, findByText } = setup();
+  fireEvent.change(getByLabelText(/email content/i), { target: { value: 'Hi' } });
+  fireEvent.click(getByRole('button', { name: /analyze email/i }));
+  expect(await findByText(/network error/i)).toBeInTheDocument();
 });
