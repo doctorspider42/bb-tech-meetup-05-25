@@ -136,8 +136,8 @@ app.MapPost(
         try
         {
             var response = await aiService.GenerateCompletionAsync(
-                request.Model,
                 request.Prompt,
+                request.Model,
                 request.Temperature);
             return Results.Ok(response);
         }
