@@ -7,6 +7,15 @@ Project Ollama is an AI-powered email assistant built with **.NET 9** and a Reac
 - .NET 9 SDK
 - Node.js 18+
 
+## Repository structure
+
+The solution file `ProjectOllama.sln` lives in the repository root. Source code
+is located under `src/` and unit tests under `tests/`:
+
+- `src/ProjectOllama` – ASP.NET Core backend project
+- `tests/ProjectOllama.Tests` – xUnit test project
+
+
 ## Configuration
 
 1. Use `dotnet user-secrets` to store your API keys outside the repository. The file `secrets.example.json` shows the required structure. Example:
@@ -14,7 +23,7 @@ Project Ollama is an AI-powered email assistant built with **.NET 9** and a Reac
    dotnet user-secrets set "AzureOpenAi:ApiKey" "<your-key>"
    dotnet user-secrets set "AzureOpenAi:Endpoint" "<your-endpoint>"
    ```
-2. Edit `appsettings.json` to select the AI provider via the `AiProvider` option. Supported providers are `Ollama`, `AzureOpenAi`, `Groq` and `DockerModel`. Each provider has its own section with model names and connection details.
+2. Edit `src/ProjectOllama/appsettings.json` to select the AI provider via the `AiProvider` option. Supported providers are `Ollama`, `AzureOpenAi`, `Groq` and `DockerModel`. Each provider has its own section with model names and connection details.
 
 ## Running the application
 
@@ -24,7 +33,7 @@ Run the API and the React UI separately:
 
 ```bash
 # start the ASP.NET backend
- dotnet run
+dotnet run --project src/ProjectOllama
 ```
 
 In another terminal:
@@ -46,7 +55,7 @@ cd EmailUI
 npm install
 npm run build:deploy
 cd ..
-dotnet run
+dotnet run --project src/ProjectOllama
 ```
 
 Static files will be copied to `wwwroot` and hosted by the backend.
