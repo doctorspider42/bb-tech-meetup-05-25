@@ -22,7 +22,9 @@ const Label = styled.label`
   color: var(--color-text);
 `;
 
-const Textarea = styled.textarea`
+const Textarea = styled.textarea.withConfig({
+  shouldForwardProp: (prop) => !['error'].includes(prop)
+})`
   width: 100%;
   min-height: 200px;
   padding: var(--spacing-md, 1rem);
@@ -43,7 +45,9 @@ const Textarea = styled.textarea`
   }
 `;
 
-const CharCount = styled.div`
+const CharCount = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['isNearLimit'].includes(prop)
+})`
   position: absolute;
   bottom: 0.5rem;
   right: 0.5rem;
