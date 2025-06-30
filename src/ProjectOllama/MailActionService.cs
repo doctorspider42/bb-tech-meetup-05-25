@@ -11,7 +11,7 @@ public class MailActionService(IAiService aiService)
         // Start the timer to measure total processing time
         var startTime = DateTime.Now;
 
-        var promptTemplate = await File.ReadAllTextAsync("Prompts/ToolSelectPrompt.txt");
+        var promptTemplate = await File.ReadAllTextAsync("src/ProjectOllama/Prompts/ToolSelectPrompt.txt");
         var fullPrompt = promptTemplate + "\n\nEmail Content:\n" + emailText;
 
         var result = await aiService.GenerateCompletionAsync(fullPrompt);
@@ -90,7 +90,7 @@ public class MailActionService(IAiService aiService)
 
     private async Task<string> WriteEmailToSupport(string emailText)
     {
-        var promptTemplate = await File.ReadAllTextAsync("Prompts/SupportEmailPrompt.txt");
+        var promptTemplate = await File.ReadAllTextAsync("src/ProjectOllama/Prompts/SupportEmailPrompt.txt");
         var fullPrompt = promptTemplate + "\n\nEmail Content:\n" + emailText;
 
         var result = await aiService.GenerateCompletionAsync(fullPrompt);
@@ -108,7 +108,7 @@ public class MailActionService(IAiService aiService)
                 "We couldn't find specific information about the product mentioned. Please provide more details about which product you're inquiring about.";
 
         // Load the product email prompt template
-        var promptTemplate = await File.ReadAllTextAsync("Prompts/ProductEmailPrompt.txt");
+        var promptTemplate = await File.ReadAllTextAsync("src/ProjectOllama/Prompts/ProductEmailPrompt.txt");
 
         // Create the full prompt with product information and email text
         var fullPrompt = promptTemplate + "\n\n" + productInfo + "\n\nCustomer Email:\n" +

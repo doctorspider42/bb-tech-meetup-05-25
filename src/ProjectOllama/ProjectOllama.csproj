@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>9747fa78-ed36-4b9a-9c3a-54e18c580647</UserSecretsId>
-    <SpaRoot>EmailUI\</SpaRoot>
+    <SpaRoot>..\..\EmailUI\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
   </PropertyGroup>
 
@@ -13,7 +13,7 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
-    <Compile Remove="ProjectOllama.Tests\**" />
+    <Compile Remove="..\..\tests\ProjectOllama.Tests\**" />
   </ItemGroup>
 
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">

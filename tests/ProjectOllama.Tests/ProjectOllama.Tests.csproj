@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ProjectOllama.csproj" />
+    <ProjectReference Include="..\src\ProjectOllama\ProjectOllama.csproj" />
   </ItemGroup>
 
 </Project>
